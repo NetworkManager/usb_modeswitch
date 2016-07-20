@@ -2021,7 +2021,8 @@ void close_all()
 		libusb_close(devh);
 	// libusb_exit will crash on Raspbian 7, crude protection
 #ifndef __ARMEL__
-	libusb_exit(NULL);
+	if (ctx)
+		libusb_exit(NULL);
 #endif
 	if (sysmode)
 		closelog();
