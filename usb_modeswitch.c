@@ -1855,7 +1855,8 @@ char* ReadParseParam(const char* FileName, char *VariableName)
 	char *FirstQuote, *LastQuote, *P1, *P2;
 	int Line=0;
 	unsigned Len=0, Pos=0;
-	char Str[LINE_DIM], *token, *configPos;
+	static char Str[LINE_DIM];
+	char *token, *configPos;
 	FILE *file = NULL;
 
 	// Reading and storing input during the first call
