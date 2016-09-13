@@ -973,6 +973,7 @@ int switchSendMessage ()
 {
 	const char* cmdHead = "55534243";
 	int ret, i;
+	int retries = 1;
 /*	char* msg[3];
 	msg[0] = MessageContent;
 	msg[1] = MessageContent2;
@@ -984,11 +985,12 @@ int switchSendMessage ()
 		SHOW_PROGRESS(output," Could not claim interface (error %d). Skip message sending\n", ret);
 		return 0;
 	}
-	libusb_clear_halt(devh, MessageEndpoint);
+
 	SHOW_PROGRESS(output,"Use endpoint 0x%02x for message sending ...\n", MessageEndpoint);
 	if (show_progress)
 		fflush(stdout);
 
+retry:
 	for (i=0; i<MSG_DIM; i++) {
 		if ( strlen(Messages[i]) == 0)
 			break;
@@ -1008,6 +1010,11 @@ int switchSendMessage ()
 			ret = read_bulk(ResponseEndpoint, ByteString, strlen(Messages[i])/2 );
 		}
 		SHOW_PROGRESS(output,"\n");
+		if (ret == LIBUSB_TRANSFER_STALL && retries--) {
+			SHOW_PROGRESS(output,"Endpoint stalled. Resetting ...\n");
+			libusb_clear_halt(devh, MessageEndpoint);
+			goto retry;
+		}
 		if (ret < 0)
 			goto skip;
 	}
