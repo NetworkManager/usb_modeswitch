@@ -55,34 +55,22 @@ if {[lindex $argv 0] == "--symlink-name"} {
 	SafeExit
 }
 
-if {[lindex $argv 0] == "--switch-systemd"} {
-	set argList [split [lindex $argv 1] _]
-	Log "\nStarted via systemd"
-} else {
-	if {[lindex $argv 0] == "--switch-upstart"} {
-		Log "\nStarted via upstart"
+if {[lindex $argv 0] == "--switch-mode"} {
+	if [string length [lindex $argv 1]] {
+		set device [lindex $argv 1]
+	} else {
+		set device "noname"
 	}
-	set argList [split [lindex $argv 1] /]
-}
-if [string length [lindex $argList 1]] {
-	set device [lindex $argList 1]
+	if {$device == "noname"} {
+		Log "\nNo data from udev. Exit"
+		SafeExit
+	}
 } else {
-	set device "noname"
+	Log "\nNo command given. Exit"
+	SafeExit
 }
 if {$flags(stordelay) > 0} {
 	SetStorageDelay $flags(stordelay)
-}
-
-Log "Raw args from udev: [lindex $argv 1]\n"
-
-if {$device == "noname"} {
-	Log "\nNo data from udev. Exit"
-	SafeExit
-}
-
-if {![regexp -- {--switch-} [lindex $argv 0]]} {
-	Log "\nNo command given. Exit"
-	SafeExit
 }
 
 set setup(dbdir) /usr/share/usb_modeswitch
@@ -98,28 +86,11 @@ set bindir /usr/sbin
 set devList1 {}
 set devList2 {}
 
-
-# arg 0: the bus id for the device (udev: %b), often ommitted
-# arg 1: the "kernel name" for the device (udev: %k)
-#
-# Used to determine the top directory for the device in sysfs
-
 set ifChk 0
-if {[string length [lindex $argList 0]] == 0} {
-	if {[string length [lindex $argList 1]] == 0} {
-		Log "No device number values given from udev! Exit"
-		SafeExit
-	} else {
-		if {![regexp {(.*?):} [lindex $argList 1] d dev_top]} {
-			if {![regexp {([0-9]+-[0-9]+\.?[0-9]*.*)} [lindex $argList 1] d dev_top]} {
-				Log "Could not determine device dir from udev values! Exit"
-				SafeExit
-			}
-		}
-	}
-} else {
-	set dev_top [lindex $argList 0]
-	regexp {(.*?):} $dev_top d dev_top
+
+if {![regexp {([0-9]+-[0-9]+\.?[0-9]*.*)} [lindex $argv 1] d dev_top]} {
+	Log "Could not determine device dir from udev values! Exit"
+	SafeExit
 }
 
 set devdir /sys/bus/usb/devices/$dev_top
