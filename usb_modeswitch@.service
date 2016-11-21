@@ -1,5 +1,5 @@
 [Unit]
-Description=USB_ModeSwitch_%i
+Description=Mode switch of USB device %i
 
 [Service]
 Type=oneshot
