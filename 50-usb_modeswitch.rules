@@ -1,0 +1,12 @@
+# Part of usb-modeswitch
+
+ACTION!="add|change", GOTO="usb_modeswitch_rules_end"
+
+# Adds a symlink "gsmmodem[n]" to the lowest ttyUSB port with interrupt
+# transfer; checked against a list of known modems, or else no action
+KERNEL=="ttyUSB*", ATTRS{bNumConfigurations}=="*", PROGRAM="usb_modeswitch --symlink-name %p %s{idVendor} %s{idProduct} %E{PRODUCT}", SYMLINK+="%c"
+
+# Devices tagged for switch by usb-modeswitch-data
+TAG=="usb_modeswitch", RUN+="usb_modeswitch '%b/%k'"
+
+LABEL="usb_modeswitch_rules_end"
