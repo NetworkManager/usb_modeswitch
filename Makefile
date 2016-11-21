@@ -79,15 +79,19 @@ ums-clean:
 
 install-common: $(PROG) usb_modeswitch_dispatcher
 	install -D --mode=755 usb_modeswitch $(SBINDIR)/usb_modeswitch
-	install -D --mode=755 usb_modeswitch.sh $(UDEVDIR)/usb_modeswitch
 	install -D --mode=644 usb_modeswitch.conf $(ETCDIR)/usb_modeswitch.conf
 	install -D --mode=644 usb_modeswitch.1 $(MANDIR)/usb_modeswitch.1
 	install -D --mode=644 usb_modeswitch_dispatcher.1 $(MANDIR)/usb_modeswitch_dispatcher.1
 	install -D --mode=755 usb_modeswitch_dispatcher $(SBINDIR)/usb_modeswitch_dispatcher
-	install -D --mode=644 50-usb_modeswitch.rules $(RULESDIR)/50-usb_modeswitch.rules
 	install -d $(DESTDIR)/var/lib/usb_modeswitch
 	test -d $(UPSDIR) -a -e /sbin/initctl && install --mode=644 usb-modeswitch-upstart.conf $(UPSDIR) || test 1
-	test -d $(SYSDIR) -a \( -e /usr/bin/systemctl -o -e /bin/systemctl \) && install --mode=644 usb_modeswitch@.service $(SYSDIR) || test 1
+	if test -d $(SYSDIR) -a \( -e /usr/bin/systemctl -o -e /bin/systemctl \); then \
+		install --mode=644 usb_modeswitch@.service $(SYSDIR) && \
+		install -D --mode=644 50-usb_modeswitch.rules-systemd $(RULESDIR)/50-usb_modeswitch.rules; \
+	else \
+		install -D --mode=755 usb_modeswitch.sh $(UDEVDIR)/usb_modeswitch && \
+		install -D --mode=644 50-usb_modeswitch.rules-compat $(RULESDIR)/50-usb_modeswitch.rules; \
+	fi
 
 install: install-script
 
